@@ -34,7 +34,7 @@ pub fn tokenize(buf: &[u8]) -> Result<Vec<Token>, SyntaxError> {
                 data: (buf[i] as char).to_string(),
                 pos: get_pos(buf, i, i + 1),
             }),
-            b'&' => tokens.push(Token { class: TokenType::Keyword, data: "&".to_owned(), pos: get_pos(buf, i, i + 1) }),
+            b'\\' => tokens.push(Token { class: TokenType::Keyword, data: "\\".to_owned(), pos: get_pos(buf, i, i + 1) }),
             _ => tokens.push(create_id(buf, &mut i))
         }
         i += 1
