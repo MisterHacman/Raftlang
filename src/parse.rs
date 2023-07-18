@@ -45,9 +45,9 @@ pub fn parse_expr(tokens: &Vec<Token>, i: &mut usize, is_arg: bool, level: &mut 
 	let token = &tokens[*i];
 	let node = match token.class {
 		TokenType::Identifier => {
-		*i += 1;
-		Node { class: NodeType::Variable, data: token.data.to_owned(), token: token.to_owned(), nodes: vec![] }
-        },
+			*i += 1;
+			Node { class: NodeType::Variable, data: token.data.to_owned(), token: token.to_owned(), nodes: vec![] }
+        	},
 		TokenType::Parenthesis => match_either!(parse_par(tokens, i, level)),
 		TokenType::Keyword => match_either!(parse_sym(tokens, i, level))
 	};
@@ -87,17 +87,14 @@ fn parse_def(tokens: &Vec<Token>, i: &mut usize, level: &mut usize) -> Result<No
 }
 
 fn parse_args(tokens: &Vec<Token>, i: &mut usize, node: Node, level: &mut usize) -> Result<Node, SyntaxError> {
-	let mut args = vec![];
-	let mut tmp;
-	while { tmp = match_either!(parse_expr(tokens, i, true, level)); tmp.class != NodeType::None } {
-		args.push(tmp)
+	let mut app_node;
+	let mut last_node = node;
+	let mut current;
+	while { current = match_either!(parse_expr(tokens, i, true, level)); current.class != NodeType::None } {
+		app_node = Node { class: NodeType::Application, data: "".to_owned(), token: current.token.to_owned(), nodes: vec![last_node, current] };
+		last_node = app_node;
 	}
-	if args.len() != 0 {
-		args.insert(0, node.clone());
-		Ok(Node { class: NodeType::Application, data: node.data, token: node.token, nodes: args })
-	} else {
-		Ok(node)
-	}
+	Ok(last_node)
 }
 
 fn parse_par(tokens: &Vec<Token>, i: &mut usize, level: &mut usize) -> Result<Node, SyntaxError> {
@@ -121,7 +118,7 @@ fn parse_par(tokens: &Vec<Token>, i: &mut usize, level: &mut usize) -> Result<No
 
 fn parse_sym(tokens: &Vec<Token>, i: &mut usize, level: &mut usize) -> Result<Node, SyntaxError> {
 	let token = &tokens[*i];
-	if token.data == "&" || token.data == "fn" {
+	if token.data == "\\" || token.data == "fn" {
 		*i += 1;
 		let var = match_either!(parse_def(tokens, i, level));
 		let body = match_either!(parse_expr(tokens, i, false, level));
